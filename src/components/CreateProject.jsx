@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
+
+const fetchProjects = async () => {
+  await getDocs(collection(db, "projects"));
+};
 
 const CreateProject = ({ projects, setProjects }) => {
   const [project, setProject] = useState({
@@ -8,12 +14,16 @@ const CreateProject = ({ projects, setProjects }) => {
     tasks: [],
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (project.name.length < 3 || project.name.length > 30)
       return toast.error("Task name must be in between 3-30 characters");
     setProjects([...projects, project]);
-    localStorage.setItem("projects", JSON.stringify([...projects, project]));
+
+    // Firebase functionaly here
+    await addDoc(collection(db, "projects"), { name: project.name });
+    fetchProjects();
+
     toast.success("Project created successfully");
     setProject((project.name = ""));
   };
